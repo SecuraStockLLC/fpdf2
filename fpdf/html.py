@@ -72,8 +72,9 @@ DEFAULT_TAG_STYLES = {
     "pre": TextStyle(t_margin=4 + 7 / 30, font_family="Courier"),
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
+    "table": TextStyle(),
 }
-INLINE_TAGS = ("a", "b", "code", "del", "em", "font", "i", "s", "strong", "u")
+INLINE_TAGS = ("a", "b", "code", "del", "em", "font", "i", "s", "strong", "u", "table")
 BLOCK_TAGS = HEADING_TAGS + (
     "blockquote",
     "center",
@@ -629,6 +630,7 @@ class HTML2FPDF(HTMLParser):
                 style=font_style,
                 colspan=colspan,
                 rowspan=rowspan,
+                tag=self.td_th["tag"]
             )
             self.td_th["inserted"] = True
         elif self.table is not None:
@@ -920,13 +922,31 @@ class HTML2FPDF(HTMLParser):
             if "face" in attrs:
                 self.font_family = attrs.get("face").lower()
         if tag == "table":
+            line_height=self.h * self.TABLE_LINE_HEIGHT
+            cell_padding = None
+            borders_layout = None
+            vertical_align = "MIDDLE"
+            use_multi_cell = True
+            if "table" in self.tag_styles and self.tag_styles["table"]:
+                if self.tag_styles["table"].line_height != None:
+                    line_height = self.tag_styles["table"].line_height
+                if self.tag_styles["table"].cell_padding != None:
+                    cell_padding = self.tag_styles["table"].cell_padding
+                if self.tag_styles["table"].borders_layout != None:
+                    borders_layout = self.tag_styles["table"].borders_layout
+                if self.tag_styles["table"].vertical_align != None:
+                    vertical_align = self.tag_styles["table"].vertical_align
+                if self.tag_styles["table"].use_multi_cell != None:
+                    use_multi_cell = self.tag_styles["table"].use_multi_cell
             width = css_style.get("width", attrs.get("width"))
             if width:
                 if width[-1] == "%":
                     width = self.pdf.epw * int(width[:-1]) / 100
                 else:
                     width = int(width) / self.pdf.k
-            if "border" not in attrs:  # default borders
+            if borders_layout != None:
+                pass
+            elif "border" not in attrs:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
                     if self.table_line_separators
@@ -939,17 +959,24 @@ class HTML2FPDF(HTMLParser):
             else:  # explicitly disabled borders
                 borders_layout = "NONE"
             align = attrs.get("align", "center").upper()
-            padding = float(attrs["cellpadding"]) if "cellpadding" in attrs else None
+            if cell_padding != None:
+                padding = float(cell_padding)
+            elif "cellpadding" in attrs:
+                padding = float(attrs["cellpadding"])
+            else:
+                padding = None
             spacing = float(attrs.get("cellspacing", 0))
             self.table = Table(
                 self.pdf,
                 align=align,
+                v_align=vertical_align,
                 borders_layout=borders_layout,
-                line_height=self.h * self.TABLE_LINE_HEIGHT,
+                line_height=line_height,
                 width=width,
                 padding=padding,
                 gutter_width=spacing,
                 gutter_height=spacing,
+                use_multi_cell=use_multi_cell
             )
             self._ln()
         if tag == "tr":
@@ -1121,7 +1148,7 @@ class HTML2FPDF(HTMLParser):
                 colspan = int(self.td_th.get("colspan", "1"))
                 rowspan = int(self.td_th.get("rowspan", "1"))
                 self.table_row.cell(
-                    text="", style=style, colspan=colspan, rowspan=rowspan
+                    text="", style=style, colspan=colspan, rowspan=rowspan, tag=self.td_th["tag"]
                 )
             self.td_th = None
         if tag == "font":

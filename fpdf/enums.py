@@ -320,6 +320,9 @@ class TableBordersLayout(CoerciveEnum):
     SINGLE_TOP_LINE = intern("SINGLE_TOP_LINE")
     "Draw only the top horizontal border, below the headings"
 
+    HEADERS_ONLY = intern("HEADERS_ONLY")
+    "Draw only the top horizontal border, below the headings"
+
 
 class CellBordersLayout(CoerciveIntFlag):
     """Defines how to render cell borders in table

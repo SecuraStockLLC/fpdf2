@@ -135,6 +135,12 @@ class TextStyle(FontFace):
         t_margin: Optional[int] = None,
         l_margin: Union[Optional[int], Optional[Align], Optional[str]] = None,
         b_margin: Optional[int] = None,
+        line_height: Optional[float] = None,  # row/cell height for table elements
+        # TODO: extract this into a TableStyle?
+        cell_padding: Optional[float] = None,
+        borders_layout: Optional[str] = None,
+        vertical_align: Optional[str] = None,
+        use_multi_cell: Optional[bool] = None,
     ):
         super().__init__(
             font_family,
@@ -153,11 +159,16 @@ class TextStyle(FontFace):
             self.l_margin = 0
 
         self.b_margin = b_margin or 0
+        self.line_height = line_height
+        self.cell_padding = cell_padding
+        self.borders_layout = borders_layout
+        self.vertical_align = vertical_align
+        self.use_multi_cell = use_multi_cell
 
     def __repr__(self):
         return (
             super().__repr__()[:-1]
-            + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
+            + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin}, line_height={self.line_height}), cell_padding={self.cell_padding}), vertical_align={self.vertical_align}), borders_layout={self.borders_layout}), use_multi_cell={self.use_multi_cell})"
         )
 
     # override parent method
@@ -172,6 +183,11 @@ class TextStyle(FontFace):
         t_margin=None,
         l_margin=None,
         b_margin=None,
+        line_height=None,
+        cell_padding=None,
+        borders_layout=None,
+        vertical_align=None,
+        use_multi_cell=None,
     ):
         """
         Create a new TextStyle instance, with new values for some attributes.
@@ -186,6 +202,11 @@ class TextStyle(FontFace):
             t_margin=self.t_margin if t_margin is None else t_margin,
             l_margin=self.l_margin if l_margin is None else l_margin,
             b_margin=self.b_margin if b_margin is None else b_margin,
+            line_height=self.line_height if line_height is None else line_height,
+            cell_padding=self.cell_padding if cell_padding is None else cell_padding,
+            borders_layout=self.borders_layout if borders_layout is None else borders_layout,
+            vertical_align=self.vertical_align if vertical_align is None else vertical_align,
+            use_multi_cell=self.use_multi_cell if use_multi_cell is None else use_multi_cell,
         )
 
 

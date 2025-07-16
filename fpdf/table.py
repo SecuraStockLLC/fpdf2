@@ -51,6 +51,7 @@ class Table:
         num_heading_rows=1,
         repeat_headings=1,
         min_row_height=None,
+        use_multi_cell=True
     ):
         """
         Args:
@@ -108,6 +109,7 @@ class Table:
         self._num_heading_rows = num_heading_rows
         self._repeat_headings = TableHeadingsDisplay.coerce(repeat_headings)
         self._min_row_height = min_row_height
+        self._use_multi_cell = use_multi_cell
         self._initial_style = None
         self.rows = []
 
@@ -326,6 +328,13 @@ class Table:
                 border.remove("T")
             elif is_bottom_row:
                 border.remove("B")
+        if self._borders_layout == TableBordersLayout.HEADERS_ONLY:
+            if rows_count == 1:
+                return 0
+            if (i == 0 or cell.tag == "th") and "T" in border:
+                border = "B"
+            else:
+                border = ""
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
                 return 0
@@ -529,23 +538,40 @@ class Table:
             self._fpdf.y += dy
 
             with self._fpdf.use_font_face(style):
-                page_break_text, cell_height = self._fpdf.multi_cell(
-                    w=col_width,
-                    h=row_height,
-                    text=cell.text,
-                    max_line_height=self._line_height,
-                    border=0,
-                    align=text_align,
-                    new_x="RIGHT",
-                    new_y="TOP",
-                    fill=False,  # fill is already done above
-                    markdown=self._markdown,
-                    output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
-                    wrapmode=self._wrapmode,
-                    padding=padding,
-                    link=cell.link,
-                    **kwargs,
-                )
+                if not self._use_multi_cell:
+                    page_break_text = None
+                    cell_height = row_height
+                    self._fpdf.cell(
+                        w=col_width,
+                        h=row_height,
+                        text=cell.text,
+                        border=0,
+                        align=text_align,
+                        new_x="RIGHT",
+                        new_y="TOP",
+                        fill=False,  # fill is already done above
+                        markdown=self._markdown,
+                        link=cell.link,
+                        **kwargs,
+                    )
+                else:
+                    page_break_text, cell_height = self._fpdf.multi_cell(
+                        w=col_width,
+                        h=row_height,
+                        text=cell.text,
+                        max_line_height=self._line_height,
+                        border=0,
+                        align=text_align,
+                        new_x="RIGHT",
+                        new_y="TOP",
+                        fill=False,  # fill is already done above
+                        markdown=self._markdown,
+                        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                        wrapmode=self._wrapmode,
+                        padding=padding,
+                        link=cell.link,
+                        **kwargs,
+                    )
 
             self._fpdf.y -= dy
         else:
@@ -806,6 +832,7 @@ class Row:
         padding=None,
         link=None,
         border=CellBordersLayout.INHERIT,
+        tag="td"
     ):
         """
         Adds a cell to the row.
@@ -857,6 +884,7 @@ class Row:
             padding,
             link,
             CellBordersLayout.coerce(border),
+            tag
         )
         self.cells.append(cell)
         return cell
@@ -878,6 +906,7 @@ class Cell:
         "padding",
         "link",
         "border",
+        "tag"
     )
     text: str
     align: Optional[Union[str, Align]]
@@ -890,6 +919,7 @@ class Cell:
     padding: Optional[Union[int, tuple, type(None)]]
     link: Optional[Union[str, int]]
     border: Optional[CellBordersLayout]
+    tag: str
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
