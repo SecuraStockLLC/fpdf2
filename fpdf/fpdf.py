@@ -1169,6 +1169,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         (x,y) position when starting to render the page content.
         """
 
+    def post_header(self):
+        pass
+
     def footer(self):
         """
         Footer to be implemented in your own inherited class.

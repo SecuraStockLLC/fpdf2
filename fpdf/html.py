@@ -536,10 +536,21 @@ class HTML2FPDF(HTMLParser):
         self.follows_trailing_space = True
         self.follows_heading = False
 
+    def _restore_font_state_after_page_break(self):
+        """Restore HTML parser font state after a page break occurred during rendering"""
+        self.pdf.set_font(
+            family=self.font_family,
+            size=self.font_size_pt,
+            style=self.font_emphasis.style,
+        )
+        if self.font_color != self.pdf.text_color:
+            self.pdf.set_text_color(self.font_color)
+
     def _end_paragraph(self):
         self.align = ""
         if not self._paragraph:
             return
+        prev_page = self.pdf.page
         self._column.end_paragraph()
         self._column.render()
         self._paragraph = None
@@ -548,6 +559,8 @@ class HTML2FPDF(HTMLParser):
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
             self._page_break_after_paragraph = False
+        if self.pdf.page != prev_page:
+            self._restore_font_state_after_page_break()
 
     def _write_paragraph(self, text, link=None):
         if not text:
