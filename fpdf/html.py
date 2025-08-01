@@ -73,6 +73,7 @@ DEFAULT_TAG_STYLES = {
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
     "table": TextStyle(),
+    "div": TextStyle(),
 }
 INLINE_TAGS = ("a", "b", "code", "del", "em", "font", "i", "s", "strong", "u", "table")
 BLOCK_TAGS = HEADING_TAGS + (
@@ -85,6 +86,7 @@ BLOCK_TAGS = HEADING_TAGS + (
     "pre",
     "ol",
     "ul",
+    "div"
 )
 # This defensive programming check ensures that we do not forget any tag in the 2 *_TAGS constants above:
 assert (set(BLOCK_TAGS) ^ set(INLINE_TAGS)) == set(DEFAULT_TAG_STYLES.keys())
@@ -803,6 +805,7 @@ class HTML2FPDF(HTMLParser):
             "s",
             "strong",
             "u",
+            "div"
         ):
             if tag in BLOCK_TAGS:
                 self._end_paragraph()
@@ -1125,6 +1128,7 @@ class HTML2FPDF(HTMLParser):
             "s",
             "strong",
             "u",
+            "div"
         ):
             if self.style_stack:
                 font_face = self.style_stack.pop()

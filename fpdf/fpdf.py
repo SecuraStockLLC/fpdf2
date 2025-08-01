@@ -1077,6 +1077,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # BEGIN Page header
         if (not self.in_toc_rendering) or self._toc_allow_page_insertion:
             self.header()
+            self.post_header()
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
@@ -1169,9 +1170,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         (x,y) position when starting to render the page content.
         """
 
-    def post_header(self):
-        pass
-
     def footer(self):
         """
         Footer to be implemented in your own inherited class.
@@ -1180,6 +1178,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         and should not be called directly by the user application.
         The default implementation performs nothing: you have to override this method
         in a subclass to implement your own rendering logic.
+        """
+
+    def post_header(self):
+        """
+        Post Header to be implemented in your own inherited class
+
+        This is automatically called by `FPDF.add_page()`
+        and should not be called directly by the user application.
+        The default implementation performs nothing: you have to override this method
+        in a subclass to implement your own rendering logic.
+
+        Note that header rendering can have an impact on the initial
+        (x,y) position when starting to render the page content.
         """
 
     def page_no(self):
